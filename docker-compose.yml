@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: ./catalog-api
+    volumes:
+      - ./catalog-api:/usr/src/app
+    # env_file:
+    # - ./catalog-api/.env
+    command: yarn start:dev
+    ports:
+      - 3000:3000
+  mongo:
+    image: mongo:4.4
+    restart: always
+    volumes:
+      - ./db:/data/db
+    ports:
+      - 27017:27017
