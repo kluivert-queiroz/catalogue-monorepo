@@ -8,6 +8,6 @@ export class CartItemResolver {
   constructor(private productsService: ProductsService) {}
   @ResolveField('product', (returns) => Product)
   async product(@Parent() cartItem: CartItemDocument): Promise<Product> {
-    return await this.productsService.findById(cartItem.product.toString());
+    return this.productsService.findById(cartItem.product.toString());
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ItemsAddedOnCartEvent } from 'src/carts/events/itemsAdded-on-cart.event';
+import { ItemsAddedOnCartEvent } from 'src/carts/events/items-added-on-cart.event';
 import { CreateProductInput } from './dto/create-product.input';
 import { Product, ProductDocument } from './models/product.model';
 
@@ -26,25 +26,28 @@ export class ProductsService {
 
   @OnEvent('cart.itemsAdded')
   async handleItemsAddedOnCart(payload: ItemsAddedOnCartEvent) {
-    // const bulkOperations = payload.items.map((item) => ({
-    //   updateOne: {
-    //     filter: { _id: item.product.toString() },
-    //     update: {
-    //       stock: item.quantity,
-    //     },
-    //   },
-    // }));
-    const bulkOperations = [
-      {
-        updateOne: {
-          filter: { name: 'Eddard Stark' },
-          // If you were using the MongoDB driver directly, you'd need to do
-          // `update: { $set: { title: ... } }` but mongoose adds $set for
-          // you.
-          update: { title: 'Hand of the King' },
+    const bulkOperations = payload.items.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product.toString() },
+        update: {
+          $inc: { stock: -item.quantity },
         },
       },
-    ];
-    return await this.productModel.bulkWrite(bulkOperations);
+    }));
+    // https://github.com/Automattic/mongoose/issues/11911
+    return await this.productModel.bulkWrite(bulkOperations as any)
+  }
+  @OnEvent('cart.itemsRemoved')
+  async handleItemsRemovedFromCart(payload: ItemsAddedOnCartEvent) {
+    const bulkOperations = payload.items.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product.toString() },
+        update: {
+          $inc: { stock: item.quantity },
+        },
+      },
+    }));
+    // https://github.com/Automattic/mongoose/issues/11911
+    return await this.productModel.bulkWrite(bulkOperations as any)
   }
 }

@@ -18,7 +18,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       autoSchemaFile: true,
       sortSchema: true,
       subscriptions: {
-        'graphql-ws': true
+        'graphql-ws': true,
+        'subscriptions-transport-ws': true
       },
     }),
     EventEmitterModule.forRoot(),

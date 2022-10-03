@@ -4,7 +4,8 @@ import { Model } from 'mongoose';
 import { CartItemInput } from './dto/cart.inputs';
 import { Cart, CartDocument } from './models/cart.model';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ItemsAddedOnCartEvent } from './events/itemsAdded-on-cart.event';
+import { ItemsAddedOnCartEvent } from './events/items-added-on-cart.event';
+import { ItemsRemovedFromCartEvent } from './events/items-removed-from-cart.event';
 
 @Injectable()
 export class CartsService {
@@ -32,6 +33,34 @@ export class CartsService {
         items,
       }),
     );
-    return await this.cartModel.findByIdAndUpdate(cartId, { items }).exec();
+    for (let item of items)
+      await this.cartModel.updateOne(
+        {
+          _id: cartId,
+          'items.product': item.product,
+        },
+        { $inc: { 'items.$.quantity': item.quantity } },
+      );
+    return await this.cartModel.findById(cartId)
+  }
+  async removeItemsFromCart(
+    cartId: String,
+    items: CartItemInput[] = [],
+  ): Promise<Cart> {
+    this.eventEmitter.emit(
+      'cart.itemsRemoved',
+      new ItemsRemovedFromCartEvent({
+        items,
+      }),
+    );
+    for (let item of items)
+      await this.cartModel.updateOne(
+        {
+          _id: cartId,
+          'items.product': item.product,
+        },
+        { $inc: { 'items.$.quantity': -item.quantity } },
+      );
+    return await this.cartModel.findById(cartId)
   }
 }
