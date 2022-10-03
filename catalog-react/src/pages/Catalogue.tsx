@@ -3,9 +3,12 @@ import useProducts from "../hooks/useProducts";
 import { Product } from "../types/product";
 import { Container, Paper } from "@mantine/core";
 import Header from "../components/Header";
+import LatestChanges from "../components/LatestChanges";
+import useCart from "../hooks/useCart";
 
 const Catalogue = () => {
   const products = useProducts();
+  if (!products) return <div>Loading</div>;
   return (
     <Container size="xs">
       <Header />
@@ -14,6 +17,7 @@ const Catalogue = () => {
           <LineItem {...product} />
         ))}
       </Paper>
+      <LatestChanges />
     </Container>
   );
 };

@@ -4,7 +4,7 @@ import { Product } from "../../types/product";
 import ItemManagement from "../ItemManagement";
 
 const LineItem = (product: Product) => {
-  const { sku, title, stock } = product;
+  const { title, stock } = product;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleModalState = (state: boolean) => () => {
     setIsModalOpen(state);
@@ -15,9 +15,6 @@ const LineItem = (product: Product) => {
     <>
       <div onClick={handleModalState(true)}>
         <Grid>
-          <Grid.Col span="content">
-            <Text>{sku}</Text>
-          </Grid.Col>
           <Grid.Col span="content">
             <Text>{title}</Text>
           </Grid.Col>

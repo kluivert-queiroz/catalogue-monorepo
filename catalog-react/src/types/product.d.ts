@@ -1,7 +1,12 @@
 export interface Product {
-  sku: string;
+  _id: string;
   title: string;
   description: string;
   price: number;
   stock: number;
+}
+
+export interface CartItem {
+  quantity: number;
+  product: Product;
 }

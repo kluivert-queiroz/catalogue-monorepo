@@ -1,6 +1,6 @@
-import { Product } from "./product";
+import { CartItem } from "./product";
 
 interface Cart {
-	id: string;
-	items: Product[]
+	_id: string;
+	items?: CartItem[]
 }
