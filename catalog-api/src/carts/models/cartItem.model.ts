@@ -10,7 +10,7 @@ export class CartItem {
   @Field((type) => Int)
   @Prop({ required: true })
   quantity: number;
-
+  
   @Field((type) => Product)
   @Prop({
     type: MongooseSchema.Types.ObjectId,

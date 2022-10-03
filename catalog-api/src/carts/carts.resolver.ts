@@ -7,8 +7,8 @@ import { CartItemInput } from './dto/cart.inputs';
 import { Cart } from './models/cart.model';
 import { CartItem } from './models/cartItem.model';
 
-const ITEMS_ADDED_TO_CART = 'itemsAddedToCart';
-const ITEMS_REMOVED_FROM_CART = 'itemsRemovedFromCart';
+export const ITEMS_ADDED_TO_CART = 'itemsAddedToCart';
+export const ITEMS_REMOVED_FROM_CART = 'itemsRemovedFromCart';
 @Resolver((of) => Cart)
 export class CartsResolver {
   constructor(
@@ -20,13 +20,16 @@ export class CartsResolver {
   async carts(): Promise<Cart[]> {
     return this.cartsService.findAll();
   }
+  @Query((type) => Cart, { nullable: true })
+  async findCartById(@Args('cartId') cartId: String): Promise<Cart> {
+    return this.cartsService.findById(cartId);
+  }
   @Mutation((returns) => Cart)
   async createCart(
     @Args({ name: 'items', type: () => [CartItemInput], nullable: true })
     items: CartItemInput[],
   ): Promise<Cart> {
     const cart = await this.cartsService.create(items);
-    this.pubSub.publish(ITEMS_ADDED_TO_CART, { itemsAddedToCart: items });
     return cart;
   }
   @Mutation((returns) => Cart)
@@ -36,7 +39,6 @@ export class CartsResolver {
     items: CartItemInput[],
   ): Promise<Cart> {
     const cart = await this.cartsService.addItemToCart(cartId, items);
-    this.pubSub.publish(ITEMS_ADDED_TO_CART, { itemsAddedToCart: items });
     return cart;
   }
   @Mutation((returns) => Cart)
@@ -45,9 +47,7 @@ export class CartsResolver {
     @Args({ name: 'items', type: () => [CartItemInput], nullable: true })
     items: CartItemInput[],
   ): Promise<Cart> {
-    const cart = await this.cartsService.removeItemsFromCart(cartId, items);
-    this.pubSub.publish(ITEMS_REMOVED_FROM_CART, { itemsRemovedFromCart: items });
-    return cart;
+    return await this.cartsService.removeItemsFromCart(cartId, items);
   }
   @Subscription(() => [CartItem])
   itemsAddedToCart() {

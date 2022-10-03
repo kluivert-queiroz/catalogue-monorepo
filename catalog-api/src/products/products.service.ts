@@ -20,6 +20,9 @@ export class ProductsService {
   async findById(id: String): Promise<Product> {
     return this.productModel.findById(id).exec();
   }
+  async findByIds(idList: String[]): Promise<Product[]> {
+    return this.productModel.find({ _id: { $in: idList } }).exec();
+  }
   async findAll(): Promise<Product[]> {
     return this.productModel.find().exec();
   }
@@ -35,7 +38,7 @@ export class ProductsService {
       },
     }));
     // https://github.com/Automattic/mongoose/issues/11911
-    return await this.productModel.bulkWrite(bulkOperations as any)
+    return await this.productModel.bulkWrite(bulkOperations as any);
   }
   @OnEvent('cart.itemsRemoved')
   async handleItemsRemovedFromCart(payload: ItemsAddedOnCartEvent) {
@@ -48,6 +51,6 @@ export class ProductsService {
       },
     }));
     // https://github.com/Automattic/mongoose/issues/11911
-    return await this.productModel.bulkWrite(bulkOperations as any)
+    return await this.productModel.bulkWrite(bulkOperations as any);
   }
 }
