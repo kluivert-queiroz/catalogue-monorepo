@@ -1,30 +1,11 @@
 import { Product } from "../../types/product";
-import { Button, Grid, NumberInput, Stack } from "@mantine/core";
+import { Grid, NumberInput, Stack, Text } from "@mantine/core";
 import { useState } from "react";
-import { useMutation } from "@apollo/client";
-import { Cart } from "../../types/cart";
-import {
-  AddItemsToCartVars,
-  ADD_ITEMS_TO_CART,
-  RemoveItemsFromCartVars,
-  REMOVE_ITEMS_FROM_CART,
-} from "../../graphql/carts";
-import { GET_PRODUCTS } from "../../graphql/products";
 import useCart from "../../hooks/useCart";
+import AddToCartButton from "./AddToCartButton";
+import RemoveFromCartButton from "./RemoveFromCartButton";
 const ItemManagement = ({ title, description, _id, stock, price }: Product) => {
-  const cart = useCart();
-  const [addItemsToCartMutation, {loading: loadingForAdding}] = useMutation<
-    { addItemsToCart: Cart },
-    AddItemsToCartVars
-  >(ADD_ITEMS_TO_CART, {
-    refetchQueries: [{ query: GET_PRODUCTS }],
-  });
-  const [removeItemsFromCartMutation, {loading: loadingForRemoving}] = useMutation<
-    { removeItemsFromCart: Cart },
-    RemoveItemsFromCartVars
-  >(REMOVE_ITEMS_FROM_CART, {
-    refetchQueries: [{ query: GET_PRODUCTS }],
-  });
+  const { cart } = useCart();
   const [quantity, setQuantity] = useState(0);
   const currencyFormatter = new Intl.NumberFormat("pt-PT", {
     style: "currency",
@@ -34,44 +15,40 @@ const ItemManagement = ({ title, description, _id, stock, price }: Product) => {
     setQuantity(qty);
   };
 
-  const handleAddToCart = () => {
-    addItemsToCartMutation({
-      variables: {
-        cartId: cart.data?._id!!,
-        items: [{ product: _id, quantity }],
-      },
-    });
-  };
-
-  const handleRemoveFromCart = () => {
-    removeItemsFromCartMutation({
-      variables: {
-        cartId: cart.data?._id!!,
-        items: [{ product: _id, quantity }],
-      },
-    });
-  };
   if (!cart) return <div>Loading</div>;
-  const isLoading = loadingForAdding || loadingForRemoving
+  const quantityInCart =
+    cart!!.items!!.find((item) => item.product._id === _id)?.quantity || 0;
   return (
     <>
       <Grid grow>
         <Grid.Col span="content">{title}</Grid.Col>
         <Grid.Col span="auto">{currencyFormatter.format(price)}</Grid.Col>
         <Grid.Col span="auto">
-          <NumberInput value={quantity} onChange={handleQuantityChange} />
+          <NumberInput
+            value={quantity}
+            onChange={handleQuantityChange}
+            min={0}
+            max={stock}
+            stepHoldDelay={500}
+            stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
+          />
         </Grid.Col>
       </Grid>
       <Grid grow>
         <Grid.Col span="auto">{description}</Grid.Col>
         <Grid.Col span={3}>
           <Stack>
-            <Button color="green" onClick={handleAddToCart} disabled={isLoading}>
-              Add to cart
-            </Button>
-            <Button color="orange" onClick={handleRemoveFromCart} disabled={isLoading}>
-              Remove from cart
-            </Button>
+            <AddToCartButton
+              cart={cart!!}
+              productId={_id}
+              quantity={quantity}
+            />
+            <RemoveFromCartButton
+              cart={cart!!}
+              productId={_id}
+              quantity={quantity}
+            />
+            <Text>This item's quantity in cart: {quantityInCart}</Text>
           </Stack>
         </Grid.Col>
       </Grid>
