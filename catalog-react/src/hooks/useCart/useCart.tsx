@@ -1,14 +1,6 @@
-import { useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import { useEffect, useContext } from "react";
-import {
-  AddItemsToCartVars,
-  ADD_ITEMS_TO_CART,
-  CartItemVar,
-  GetCartVars,
-  GET_CART,
-  RemoveItemsFromCartVars,
-  REMOVE_ITEMS_FROM_CART,
-} from "../../graphql/carts";
+import { GetCartVars, GET_CART } from "../../graphql/carts";
 import { Cart } from "../../types/cart";
 import { CartContext } from "../../contexts/CartContext";
 
@@ -21,9 +13,9 @@ const useCart = () => {
 
   useEffect(() => {
     if (cart) getCart({ variables: { cartId: cart._id } });
-  }, [cart]);
+  }, [cart, getCart]);
 
-  return { data: data?.findCartById };
+  return { cart: data?.findCartById };
 };
 
 export default useCart;

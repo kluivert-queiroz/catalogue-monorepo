@@ -1,10 +1,9 @@
 import LineItem from "../components/LineItem";
 import useProducts from "../hooks/useProducts";
 import { Product } from "../types/product";
-import { Container, Paper } from "@mantine/core";
+import { Container, Stack } from "@mantine/core";
 import Header from "../components/Header";
 import LatestChanges from "../components/LatestChanges";
-import useCart from "../hooks/useCart";
 
 const Catalogue = () => {
   const products = useProducts();
@@ -12,11 +11,11 @@ const Catalogue = () => {
   return (
     <Container size="xs">
       <Header />
-      <Paper shadow="xs" p="xs">
+      <Stack>
         {products.map((product: Product) => (
           <LineItem {...product} />
         ))}
-      </Paper>
+      </Stack>
       <LatestChanges />
     </Container>
   );

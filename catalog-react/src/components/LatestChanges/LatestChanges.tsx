@@ -41,11 +41,11 @@ const LatestChanges = () => {
   };
   useEffect(() => {
     if (!isOpen && changes.length > 0) handleModalState(true)();
-  }, [changes]);
+  }, [changes, isOpen]);
   const handleModalState = (state: boolean) => () => {
     setIsOpen(state);
+    if (state === false) setChanges([]);
   };
-
   return (
     <div>
       <Modal

@@ -1,31 +1,61 @@
-import { Grid, Text, Modal, useMantineTheme, Button } from "@mantine/core";
+import { Text, Modal, useMantineTheme, Button, Paper } from "@mantine/core";
 import { useState } from "react";
 import { Product } from "../../types/product";
 import ItemManagement from "../ItemManagement";
+import {
+  ItemThumbnail,
+  LineItemContainer,
+  LineItemInformationContainer,
+  LineItemPrice,
+  LineItemStock,
+} from "./styles";
 
 const LineItem = (product: Product) => {
-  const { title, stock } = product;
+  const { title, stock, price, description } = product;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleModalState = (state: boolean) => () => {
     setIsModalOpen(state);
   };
   const theme = useMantineTheme();
-
+  const currencyFormatter = new Intl.NumberFormat("pt-PT", {
+    style: "currency",
+    currency: "EUR",
+  });
   return (
-    <>
-      <div onClick={handleModalState(true)}>
-        <Grid>
-          <Grid.Col span="content">
-            <Text>{title}</Text>
-          </Grid.Col>
-          <Grid.Col span="auto">
-            <Text align="right">{stock}</Text>
-          </Grid.Col>
-        </Grid>
-      </div>
+    <div>
+      <Paper
+        onClick={handleModalState(true)}
+        style={{ cursor: "pointer" }}
+        radius="md"
+        p="md"
+        withBorder
+      >
+        <LineItemContainer>
+          <div>
+            <ItemThumbnail
+              alt={title}
+              src="https://images-americanas.b2w.io/produtos/01/00/img/132248/7/132248770G1.jpg"
+            />
+          </div>
+          <LineItemInformationContainer>
+            <div>
+              <Text weight={500}>{title}</Text>
+            </div>
+            <div>
+              <Text>{description}</Text>
+            </div>
+            <LineItemPrice>
+              <Text weight={700}>{currencyFormatter.format(price)}</Text>
+            </LineItemPrice>
+          </LineItemInformationContainer>
+          <LineItemStock>
+            <Text size="xs">Stock: {stock}</Text>
+          </LineItemStock>
+        </LineItemContainer>
+      </Paper>
       <Modal
         opened={isModalOpen}
-        title="Add to cart"
+        title="Choose item"
         onClose={handleModalState(false)}
         overlayColor={
           theme.colorScheme === "dark"
@@ -46,7 +76,7 @@ const LineItem = (product: Product) => {
           </Button>
         </div>
       </Modal>
-    </>
+    </div>
   );
 };
 
