@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CartItemInput } from './dto/cart.inputs';
@@ -7,9 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ItemsAddedOnCartEvent } from './events/items-added-on-cart.event';
 import { ItemsRemovedFromCartEvent } from './events/items-removed-from-cart.event';
 import { ProductsService } from 'src/products/products.service';
-import { ITEMS_ADDED_TO_CART, ITEMS_REMOVED_FROM_CART } from './carts.resolver';
-import { PubSub } from 'graphql-subscriptions';
-import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
+import { CartItem } from './models/cartItem.model';
 
 @Injectable()
 export class CartsService {
@@ -17,7 +15,6 @@ export class CartsService {
     @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
     private eventEmitter: EventEmitter2,
     private productsService: ProductsService,
-    @Inject(PUB_SUB) private pubSub: PubSub,
   ) {}
   async findAll(): Promise<Cart[]> {
     return this.cartModel.find().exec();
@@ -31,21 +28,21 @@ export class CartsService {
     if (!items) return cart;
     return await this.addItemToCart(cart._id, items);
   }
-
+  private async canAddProductToCart(item: CartItemInput): Promise<boolean> {
+    const product = await this.productsService.findById(
+      item.product.toString(),
+    );
+    if (product.stock < item.quantity) return false;
+    return true;
+  }
   async addItemToCart(
     cartId: String,
     items: CartItemInput[] = [],
   ): Promise<Cart> {
-    const products = await this.productsService.findByIds(
-      items.map((item) => item.product.toString()),
-    );
     const modifiedItems: CartItemInput[] = [];
     // TODO bulk operation
     for (let item of items) {
-      const matchProduct = products.find(
-        (product) => product._id.toString() === item.product.toString(),
-      );
-      if (matchProduct.stock < item.quantity) continue;
+      if (!(await this.canAddProductToCart(item))) continue;
       await this.cartModel.updateOne(
         { _id: cartId },
         {
@@ -70,9 +67,32 @@ export class CartsService {
           items: modifiedItems,
         }),
       );
-      this.pubSub.publish(ITEMS_ADDED_TO_CART, { itemsAddedToCart: items });
     }
     return await this.cartModel.findById(cartId);
+  }
+  private async getItemFromCart(
+    cart: Cart,
+    productId: string,
+  ): Promise<CartItem> {
+    return cart.items.find(
+      (cartItem) => cartItem.product.toString() === productId,
+    );
+  }
+  private async ensureItemsAreRemovableFromCart(
+    cart: Cart,
+    items: CartItemInput[],
+  ): Promise<CartItemInput[]> {
+    for (let item of items) {
+      const cartItem = await this.getItemFromCart(
+        cart,
+        item.product.toString(),
+      );
+      if (!cartItem) continue;
+      if (item.quantity > cartItem.quantity) {
+        item.quantity = cartItem.quantity;
+      }
+    }
+    return items;
   }
   async removeItemsFromCart(
     cartId: String,
@@ -80,15 +100,11 @@ export class CartsService {
   ): Promise<Cart> {
     const cart = await this.cartModel.findById(cartId);
     let modifiedItems: CartItemInput[] = [];
-    for (let item of items) {
-      const currentProductInCart = cart.items.find(
-        (cartItem) => cartItem.product.toString() === item.product.toString(),
-      );
-      if (!currentProductInCart) continue;
-      if (item.quantity > currentProductInCart.quantity) {
-        item.quantity = currentProductInCart.quantity;
-      }
-      if (item.quantity !== 0) modifiedItems.push(item);
+    const removableItems = await this.ensureItemsAreRemovableFromCart(
+      cart,
+      items,
+    );
+    for (let item of removableItems) {
       await this.cartModel.updateOne(
         { _id: cartId },
         {
@@ -98,6 +114,7 @@ export class CartsService {
           arrayFilters: [{ 'item.product': { $eq: item.product } }],
         },
       );
+      modifiedItems.push(item);
     }
     if (modifiedItems.length > 0) {
       this.eventEmitter.emit(
@@ -106,9 +123,6 @@ export class CartsService {
           items: modifiedItems,
         }),
       );
-      this.pubSub.publish(ITEMS_REMOVED_FROM_CART, {
-        itemsRemovedFromCart: items,
-      });
     }
     return await this.cartModel.findById(cartId);
   }

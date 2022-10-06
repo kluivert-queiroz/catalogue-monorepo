@@ -1,14 +1,13 @@
 import { Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
+import { ITEMS_ADDED_TO_CART, ITEMS_REMOVED_FROM_CART } from 'src/products/products.service';
 import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
 import { CartsService } from './carts.service';
 import { CartItemInput } from './dto/cart.inputs';
 import { Cart } from './models/cart.model';
 import { CartItem } from './models/cartItem.model';
 
-export const ITEMS_ADDED_TO_CART = 'itemsAddedToCart';
-export const ITEMS_REMOVED_FROM_CART = 'itemsRemovedFromCart';
 @Resolver((of) => Cart)
 export class CartsResolver {
   constructor(
@@ -29,8 +28,7 @@ export class CartsResolver {
     @Args({ name: 'items', type: () => [CartItemInput], nullable: true })
     items: CartItemInput[],
   ): Promise<Cart> {
-    const cart = await this.cartsService.create(items);
-    return cart;
+    return await this.cartsService.create(items);
   }
   @Mutation((returns) => Cart)
   async addItemsToCart(
@@ -38,8 +36,7 @@ export class CartsResolver {
     @Args({ name: 'items', type: () => [CartItemInput], nullable: true })
     items: CartItemInput[],
   ): Promise<Cart> {
-    const cart = await this.cartsService.addItemToCart(cartId, items);
-    return cart;
+    return await this.cartsService.addItemToCart(cartId, items);
   }
   @Mutation((returns) => Cart)
   async removeItemsFromCart(
