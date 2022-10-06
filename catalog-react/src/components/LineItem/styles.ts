@@ -7,7 +7,7 @@ export const LineItemContainer = styled.div`
 `;
 export const LineItemInformationContainer = styled.div`
   display: flex;
-  flexdirection: column;
+  flex-direction: column;
   position: relative;
 `;
 

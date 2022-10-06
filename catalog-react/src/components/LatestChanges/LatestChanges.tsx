@@ -6,6 +6,8 @@ import {
   ITEMS_REMOVED_FROM_CART,
 } from "../../graphql/products";
 import { CartItem } from "../../types/product";
+// @ts-ignore
+import crosstab from "crosstab";
 type ChangeType = "INCREASED" | "DECREASED";
 type Change = {
   type: ChangeType;
@@ -37,15 +39,20 @@ const LatestChanges = () => {
     }));
   };
   const handleIncomingData = (type: ChangeType, items?: CartItem[]) => {
-    if (items) setChanges(cartItemToChanges(type, items));
+    crosstab.broadcast("stockEvent", { type, items });
   };
   useEffect(() => {
     if (!isOpen && changes.length > 0) handleModalState(true)();
   }, [changes, isOpen]);
+
   const handleModalState = (state: boolean) => () => {
     setIsOpen(state);
     if (state === false) setChanges([]);
   };
+
+  crosstab.on("stockEvent", ({ origin, data: { type, items } }: any) => {
+    if (items) setChanges(cartItemToChanges(type, items));
+  });
   return (
     <div>
       <Modal
