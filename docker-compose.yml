@@ -1,19 +1,29 @@
 services:
   api:
     build:
-      dockerfile: Dockerfile
       context: ./catalog-api
     volumes:
+      - /usr/src/app/node_modules
       - ./catalog-api:/usr/src/app
-    # env_file:
-    # - ./catalog-api/.env
     command: yarn start:dev
     ports:
       - 3000:3000
+  app:
+    build:
+      context: ./catalog-react
+    ports:
+    - 3001:3000
+    command: yarn start
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+    - /usr/src/app/node_modules
+    - ./catalog-react:/usr/src/app
   mongo:
     image: mongo:4.4
     restart: always
     volumes:
-      - ./db:/data/db
+      - ./mongo/data:/data/db
+      - ./mongo/seed.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
       - 27017:27017
