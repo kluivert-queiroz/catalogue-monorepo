@@ -1,15 +1,16 @@
-import { Grid, Text } from "@mantine/core";
+import { Container, Stack, Text } from "@mantine/core";
 import useCart from "../../hooks/useCart";
 const Header = () => {
-  const { data: cart } = useCart();
-  const totalItemsInCart = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
+  const { cart } = useCart();
+  const totalItemsInCart =
+    cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   return (
-    <Grid>
-      <Grid.Col span="auto">Catalogue Application</Grid.Col>
-      <Grid.Col span="auto">
+    <Container>
+      <Stack>
+        <Text weight={700} size="xl" align="center">Catalogue</Text>
         <Text align="right">Total in cart: {totalItemsInCart} item(s)</Text>
-      </Grid.Col>
-    </Grid>
+      </Stack>
+    </Container>
   );
 };
 
