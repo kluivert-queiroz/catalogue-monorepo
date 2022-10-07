@@ -28,8 +28,9 @@ const AddToCartButton = ({
       },
     });
   };
+  const isDisabled = isLoading || quantity === 0;
   return (
-    <Button color="green" onClick={handleClick} disabled={isLoading}>
+    <Button color="green" onClick={handleClick} disabled={isDisabled} loading={isLoading}>
       Add to cart
     </Button>
   );

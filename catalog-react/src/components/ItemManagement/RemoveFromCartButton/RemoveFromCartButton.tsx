@@ -16,7 +16,7 @@ const RemoveFromCartButton = ({
   quantity,
   productId,
 }: RemoveFromCartButtonProps) => {
-  const [removeItemsFromCartMutation] = useMutation<
+  const [removeItemsFromCartMutation, { loading: isLoading }] = useMutation<
     { removeItemsFromCart: Cart },
     RemoveItemsFromCartVars
   >(REMOVE_ITEMS_FROM_CART, {
@@ -31,8 +31,9 @@ const RemoveFromCartButton = ({
       },
     });
   };
+  const isDisabled = isLoading || quantity === 0;
   return (
-    <Button color="orange" onClick={handleRemoveFromCart}>
+    <Button color="orange" onClick={handleRemoveFromCart} disabled={isDisabled} loading={isLoading}>
       Remove from cart
     </Button>
   );
