@@ -5,7 +5,7 @@ import { CartContext } from "./contexts/CartContext";
 import { CREATE_EMPTY_CART } from "./graphql/carts";
 import Catalogue from "./pages/Catalogue";
 import { Cart } from "./types/cart";
-import './index.css'
+import "./index.css";
 function App() {
   const [createCart, { data: emptyCartData }] = useMutation<{
     createCart: Cart;
@@ -14,9 +14,8 @@ function App() {
     createCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if (!emptyCartData?.createCart) return <div>Loading</div>;
   return (
-    <CartContext.Provider value={emptyCartData.createCart}>
+    <CartContext.Provider value={emptyCartData?.createCart || null}>
       <MantineProvider withGlobalStyles withNormalizeCSS>
         <Catalogue />
       </MantineProvider>

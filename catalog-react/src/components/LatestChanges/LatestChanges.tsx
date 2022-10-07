@@ -50,7 +50,7 @@ const LatestChanges = () => {
     if (state === false) setChanges([]);
   };
 
-  crosstab.on("stockEvent", ({ origin, data: { type, items } }: any) => {
+  crosstab.on("stockEvent", ({ data: { type, items } }: any) => {
     if (items) setChanges(cartItemToChanges(type, items));
   });
   return (
