@@ -8,6 +8,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CartsModule } from './carts/carts.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UsersModule } from './users/users.module';
+import { AuthenticationService } from './authentication/authentication.service';
+import { AuthenticationModule } from './authentication/authentication.module';
 
 
 @Module({
@@ -26,8 +29,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ProductsModule,
     CartsModule,
     PubSubModule,
+    UsersModule,
+    AuthenticationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AuthenticationService],
 })
 export class AppModule {}
